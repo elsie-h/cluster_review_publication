@@ -29,6 +29,10 @@ extract <- extract %>%
 extract <- extract %>%
   mutate_all(funs(str_to_lower))
 
+# correct spelling error
+extract <- extract %>%
+  mutate_at(vars("author"), function(x) if_else(x == "ruggierei", "ruggieri", x))
+
 # remove the Su 2019 paper as data is not multimodal
 extract <- extract %>%
   filter(!(str_detect(author, "exclude")))
@@ -76,7 +80,10 @@ lapply(names, my_groups)
 extract <- extract %>%
   mutate(clinical_previous = if_else(is.na(clinical_previous),
                                     NA_character_,
-                                    "yes")
+                                    "yes"),
+         clinical_previous = if_else(vselect_other %in% "exploratory analysis using pca and cluster analysis",
+                                       "yes",
+                                       clinical_previous)
          )
 
 names <- extract %>% select(starts_with("clinical_")) %>% names() %>% unlist() %>% unname()
@@ -91,9 +98,10 @@ extract <- extract %>%
   mutate(vselect_other = if_else(vselect_other %in% c("composites","no subjective variables","avoiding collinerity"),
                                  NA_character_,
                                  vselect_other),
-         vselect_exploratory = if_else(vselect_other %in% "exploratory analysis using pca and cluster analysis",
-                                       "yes",
-                                       NA_character_),
+         # vselect_exploratory is a tricky one, but I'm going to put it under clinical_previous
+         # vselect_exploratory = if_else(vselect_other %in% "exploratory analysis using pca and cluster analysis",
+         #                               "yes",
+         #                               NA_character_),
          vselect_supervised = if_else(vselect_other %in% "supervised methods",
                                       "yes",
                                       NA_character_),
@@ -138,7 +146,7 @@ extract <- extract %>%
   mutate(ft_pca_unclear = if_else(ft_pca %in% "unclear", 
                                   "yes", 
                                   NA_character_),
-         ft_pca = if_else(ft_pca %in% "yes", 
+         ft_pca = if_else(ft_pca %in% "yes" | ft_pca_unclear %in% "yes", 
                           "yes", 
                           NA_character_),
          ft_factor = if_else(ft_other %in% "factor analysis with varimax rotation", 
@@ -147,7 +155,7 @@ extract <- extract %>%
          ft_mca = if_else(ft_other %in% "multiple correspondence analysis", 
                           "yes", 
                           NA_character_)) %>%
-  select(-ft_other)
+  select(-ft_other, -ft_pca_unclear)
 
 # N_FEATURES
 extract %>%
@@ -206,7 +214,7 @@ extract <- extract %>%
          ut_box = if_else(ut_other %in% "box-cox",
                           "yes",
                           NA_character_),
-         ut_fev1 = if_else(str_detect(ut_other, "fev1"),
+         ut_unclear = if_else(str_detect(ut_other, "fev1"),
                            "yes",
                            NA_character_)) %>%
   select(-ut_other)
@@ -343,4 +351,5 @@ extract <- extract %>%
 
 save(extract, file = "extract.RData")
 
-
+# claenup
+rm(extract, names, my_groups)
