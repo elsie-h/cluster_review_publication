@@ -351,3 +351,19 @@ key <- tribble(
 )
 my_summary("stab", key)
 ```
+
+```{r report}
+q_or_s <- extract %>%
+  select(starts_with("rep"), starts_with("stab")) %>%
+  mutate(n = rowSums(!is.na(.[1:12]))) %>%
+  filter(n > 0)
+  extract %>%
+    select("details_report_stab") %>%
+    summarise_all(funs(n = sum(!is.na(.)))) %>%
+    gather() %>%
+    mutate(`n (%)` = str_c(value, " (",round(100*value/nrow(q_or_s),0),")")) %>%
+    mutate(key = "Reporting results from testing the quality or stability of solution") %>%
+    select(Method = key, `n (%)`) %>%
+    mutate_all(as.character) %>%
+    kable(format = "markdown") 
+```
