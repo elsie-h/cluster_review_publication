@@ -759,3 +759,22 @@ Post-processing
 | Bootstrap methods              | 3 (5) |
 | Unclear methods                | 2 (3) |
 | Train and test set             | 1 (2) |
+
+<table>
+<colgroup>
+<col width="88%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Method</th>
+<th align="left">n (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Reporting results from testing the quality or stability of solution</td>
+<td align="left">21 (70)</td>
+</tr>
+</tbody>
+</table>
