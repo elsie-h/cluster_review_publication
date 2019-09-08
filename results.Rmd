@@ -2,7 +2,7 @@
 title: "Tables and figures for manuscript"
 author: "Elsie Horne"
 date: "31/07/2019"
-output: html_document
+output: rmarkdown::github_document
 ---
 
 <style type="text/css">
@@ -280,7 +280,7 @@ big_table <- big_table %>%
 names(big_table)[6] <- paste0("n (%", footnote_marker_alphabet(1, "html"), ")")
 
 big_table %>% 
-  kable(format = "html",
+  kable(format = "markdown",
         booktabs = TRUE, 
         align = "c", 
         linesep = '',
