@@ -1,0 +1,355 @@
+---
+title: "Tables and figures for manuscript"
+author: "Elsie Horne"
+date: "31/07/2019"
+output: html_document
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+load("extract.RData")
+```
+
+```{r summary_fun, include = FALSE}
+n_methods <- function(var, data = extract) {
+  stem <- str_c(var, "_")
+  data %>%
+  select(starts_with(stem)) %>%
+  mutate_all(funs(if_else(is.na(.), 0, 1))) %>%
+  mutate(n = rowSums(.)) %>%
+  group_by(n) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(
+  revcumsum = spatstat.utils::revcumsum(nn),
+  `Cumulative sum using >z methods (%)` =  str_c(revcumsum, " (", round(100*revcumsum / nrow(extract), 0), "%)"),
+  `n (%)` = str_c(nn, " (", round(100 * nn / nrow(extract), 0), "%)")
+  ) %>%
+  select(`Number of methods used by each study` = n,
+  `n (%)`,
+  `Cumulative sum using >z methods (%)`) %>%
+  mutate_all(as.character) %>%
+  kable() %>%
+  kable_styling(
+  bootstrap_options = c("condensed"),
+  full_width = F,
+  position = "left"
+  )
+}
+my_summary <- function(var, key) {
+    stem <- str_c(var, "_")
+  extract %>%
+    select(starts_with(stem)) %>%
+    summarise_all(funs(n = sum(!is.na(.)))) %>%
+    gather() %>%
+    arrange(desc(value)) %>%
+    mutate(`n (%)` = str_c(value, " (",round(100*value/nrow(extract),0),")")) %>%
+    mutate(key = str_remove(str_remove(key, stem), "_n")) %>%
+    full_join(key, by = c("key" = "key")) %>%
+    select(Method = name, `n (%)`) %>%
+    mutate_all(as.character) %>%
+    kable() %>% 
+    kable_styling(bootstrap_options = c("condensed"), 
+                  full_width = F,
+                  position = "left")
+  #file = str_c(var, ".txt")
+  #write.table(table, file, sep = ",", quote = FALSE, row.names = F)
+}
+```
+
+## Abstract
+### Data types
+```{r data_type}
+extract %>% 
+  group_by(data_type) %>% 
+  count() %>%
+  ungroup() %>%
+  arrange(desc(n)) %>%
+  transmute(`Data type` = Hmisc::capitalize(data_type),
+         `n (%)` = str_c(n, " (", round(100*n/nrow(extract),0), "%)")) 
+```
+
+## Initial considerations  
+### Identifying candidate cluster features
+```{r clinical}
+n_methods("clinical")
+key <- tribble(
+  ~key, ~name,
+  "relevence", "Clinical relevance",
+  "previous", "Previous studies",
+  "easy", "Easily measured in clinical practice",
+  "redundance", "Avoid clinical redundancy"
+)
+my_summary("clinical", key)
+```
+
+### Missing data
+```{r missing}
+n_methods("miss")
+key <- tribble(
+  ~key, ~name,
+  "cc", "Complete case analysis",
+  "pat", "Patients with >x% missing values removed",
+  "impute", "Imputed",
+  "var", "Variables with >x% missing values removed",
+  "none", "No missing data present",
+  "handle", "Clustering methods handle missing data"
+)
+my_summary("miss", key)
+```
+
+### Sample size
+```{r sample_size_plot}
+abline <- data.frame(x = c(0, 1), y = c(0,70))
+extract %>%
+  mutate(cluster_kmean = as.factor(if_else(cluster_kmean %in% c("yes", "final"),
+                                 "k-means",
+                                 "other"))) %>%
+  ggplot() +
+    geom_abline(aes(intercept = 0, slope = 70), data = abline, alpha= 0.5) +
+  geom_point(aes(x = n_feat, y = n_pat, shape = cluster_kmean, colour = cluster_kmean), alpha = 0.5, size = 3) +
+  coord_cartesian(xlim = c(0,120)) +
+    xlab("Number of cluster features") +
+    ylab("Number of patients") +
+    scale_shape_discrete(name = "Clustering method") +
+  scale_colour_discrete(name = "Clustering method") +
+  theme(
+    text = element_text(size = 16),
+    axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = NA),
+    panel.grid.major = element_line(colour = "grey70"),
+    panel.ontop = FALSE
+  ) 
+# + ggsave("n_patsvsn_feats.png", width = 7, height = 5)
+```
+
+```{r sample_size}
+extract %>%
+  select(n_pat, n_feat) %>%
+  mutate(n70 = 70*n_feat,
+         n30 = 30*n_feat) %>%
+  filter(n_pat >= n70) %>%
+  count() %>%
+  unlist() %>%
+  unname() %>%
+  str_c(., "(", round(100*./nrow(extract),0), "%) studies have 70 or more patients per cluster feature.")
+```
+
+## Feature engineering
+### Univariate feature transformations
+```{r univariate}
+n_methods("ut")
+key <- tribble(
+  ~key, ~name,
+  "log", "Logarithmic transformation",
+  "box", "Box-Cox transformation",
+  "fev1", "FEV1 values adjusted (check paper)"
+)
+my_summary("ut", key)
+```
+
+### Feature selection
+```{r feat_selection}
+n_methods("vselect")
+key <- tribble(
+  ~key, ~name,
+  "coll", "Avoid collinearity",
+  "multico", "Avoid mutlicollinearity",
+  "fa", "Factor analysis",
+  "pca", "Principal component analysis",
+  "supervised", "Supervised methods",
+  "mca", "Multiple correspondence analysis"
+)
+my_summary("vselect", key)
+```
+
+### Feature tansformation
+```{r feat_trans}
+n_methods("ft")
+key <- tribble(
+  ~key, ~name,
+  "pca", "Principal component analysis",
+  "pca_unclear", "Principal component analysis (unclear)",
+  "factor", "Factor analysis",
+  "mca", "Multiple correspondence analysis"
+)
+my_summary("ft", key)
+```
+
+## Cluster analysis
+```{r big_table}
+cluster <- extract %>% 
+  select(id, starts_with("cluster")) %>%
+  gather(cluster, value, -id, na.rm = TRUE) %>%
+  select(-value) 
+
+type <- extract %>% 
+  select(id, starts_with("data")) %>%
+  gather(type, value, -id, na.rm = TRUE) %>%
+  select(-type) 
+ 
+
+prox <- extract %>% 
+  select(id, starts_with("prox")) %>%
+  gather(prox, value, -id, na.rm = TRUE) %>%
+  select(-value) 
+
+scale <- extract %>% 
+  select(id, starts_with("scale")) %>%
+  gather(scale, value, -id, na.rm = TRUE) %>%
+  select(-value)
+
+bin <- extract %>% 
+  select(id, starts_with("encode")) %>%
+  gather(encode, value, -id, na.rm = TRUE) %>%
+  select(-value) 
+
+big_table <- cluster %>%
+  left_join(type, by = "id") %>%
+  left_join(prox, by = "id") %>%
+  left_join(scale, by = "id") %>%
+  left_join(bin, by = "id") %>%
+  select(-id)
+
+big_table <- big_table %>%
+  group_by(cluster) %>%
+  count() %>%
+  rename(n_cluster = n) %>%
+  right_join(big_table, by = "cluster") %>%
+  ungroup() %>%
+  group_by(cluster, n_cluster, value, prox, scale, encode) %>%
+  count() %>%
+  arrange(desc(n_cluster)) %>%
+  ungroup() %>%
+  mutate_at(vars("cluster"), funs(str_remove(., "cluster_"))) %>%
+  mutate_at(vars("cluster"), funs(case_when(. %in% "ward" ~ "Hierarchical with Ward's linkage",
+                                            . %in% "kmean" ~ "k-means",
+                                            . %in% "spss" ~ "SPSS TwoStep",
+                                            . %in% "hier" ~ "Hierarchical clustering (linkage not specified)",
+                                            . %in% "kmedoid" ~ "k-medoids",
+                                            . %in% "fuzzypam" ~ "Fuzzy k-medoids",
+                                            . %in% "hier_ave" ~ "Hierarchical with average linkage",
+                                            . %in% "kmean_ward" ~ "k-means to pre-cluster then hierarchical with Ward's linkage",
+                                            . %in% "mmlmkkc" ~ "Multiple kernel k-means clustering ",
+                                            . %in% "pre_hier" ~ "pre-cluster step followed by hierarchical clustering",
+                                            . %in% "spec" ~ "Spectral clustering",
+                                            . %in% "unclear" ~ "Unclear"))) %>%
+  mutate(n = str_c(n, " (", round(100*n/n_cluster,0), ")"),
+         cluster = str_c(cluster, " n = ", n_cluster, " (", round(100*n_cluster/nrow(big_table),0), "%)")) %>%
+  select(-n_cluster) %>%
+  mutate_at(vars("prox"), funs(str_remove(., "prox_"))) %>%
+  mutate_at(vars("prox"), funs(case_when(. %in% "euc_ass" ~ "Euclidean assumed",
+                                         . %in% "euc_ex" ~ "Euclidean stated",
+                                         . %in% "gower" ~ "Gower",
+                                         . %in% "tree" ~ "treeClust",
+                                         . %in% "ll_ass" ~ "Log-likelihood assumed",
+                                         . %in% "ll_exp" ~ "Log-likelihood stated",
+                                         . %in% "spearman" ~ "Spearman's rho")))  %>%
+  mutate_at(vars("scale"), funs(str_remove(., "scale_"))) %>%
+  mutate_at(vars("scale"), funs(case_when(. %in% "01" ~ "Scaled to range [0 1]",
+                                          . %in% "unspec" ~ "Scaled but method unspecified",
+                                          . %in% "z" ~ "z-scores",
+                                          . %in% "gower" ~ "Gower standardisation",
+                                          . %in% "z_one" ~ "z-scores for one feature",
+                                          . %in% "centre" ~ "Centre-scaled",
+                                          . %in% "aad" ~ "Average absolute deviation",
+                                          . %in% "unit" ~ "Scaled to unit vectors",
+                                          TRUE ~ "No details"))) %>%
+  mutate_at(vars("encode"), funs(case_when(. %in% "encode_bin" ~ "Yes",
+                                           TRUE ~ "No"))) %>%
+  mutate_at(vars("value"), funs(Hmisc::capitalize(.))) %>%
+  rename(`Clustering method` = cluster,
+         `Data type` = value,
+         Dissimilarity = prox,
+         `Feature scaling` = scale,
+         `Feature encoding` = encode) %>%
+  mutate_all(as.character)
+
+names(big_table)[6] <- paste0("n (%", footnote_marker_alphabet(1, "html"), ")")
+
+big_table %>% 
+  kable(format = "html",
+        booktabs = TRUE, 
+        align = "c", 
+        linesep = '',
+        escape = FALSE) %>% 
+  kable_styling(bootstrap_options = c("condensed"), 
+                  full_width = F,
+                  position = "left") %>%
+  collapse_rows(columns = 1, 
+                row_group_label_position = 'stack') %>%
+  footnote(alphabet = "% grouped by cluster method",
+           footnote_as_chunk = TRUE)
+```
+
+## Post-processing
+### Choosing the number of clusters
+```{r choosing_k}
+# max number of statistics used by a single study
+max_stat <- max(extract$details_k_stat_n, na.rm = TRUE)
+# create a new column for 1:max_stat
+tmp_data <- extract %>% 
+  select(-k_max, -k_mpc) %>%
+  mutate(k_stat_1 = if_else(details_k_stat_n >= 1, "yes", NA_character_),
+         k_stat_2 = if_else(details_k_stat_n >= 2, "yes", NA_character_),
+         k_stat_3 = if_else(details_k_stat_n >= 3, "yes", NA_character_))
+n_methods(data = tmp_data, "k")
+rm(tmp_data)
+
+key <- tribble(
+  ~key, ~name,
+  "dend", "Dendrogram",
+  "bic", "Bayesian information criterion",
+  "previous", "Previous studies",
+  "interp", "Clinical interpretation",
+  "max", "Specify a maximum number of clusters",
+  "mpc", "Specify a minimum size of smallest cluster",
+  "silhouette", "Silhouette plot or average silhouette width",
+  "stat", "Statistic(s)",
+  "wards", "Hierarchical clustering with Ward's linkage",
+  "scree", "Scree plot",
+  "unclear", "Unclear"
+)
+my_summary("k", key)
+```
+### Reproducibility
+```{r repr}
+n_methods("rep")
+key <- tribble(
+  ~key, ~name,
+  "sep", "Repeated in separate cohort",
+  "select", "Repeated in selected subset",
+  "method", "Repeated with difference methods",
+  "initial", "Repeated with different initial configurations",
+  "var", "Repeated with altered variables",
+  "time", "Repeated at different time-point",
+  "software", "Repeated with different software"
+)
+my_summary("rep", key)
+```
+
+### Stability
+```{r stab}
+n_methods("stab")
+key <- tribble(
+  ~key, ~name,
+  "random", "Repeated in random subset",
+  "loo", "Leave-one-out cross-validation",
+  "boot", "Bootstrap methods",
+  "tt", "Train and test set",
+  "unclear", "Unclear methods"
+)
+my_summary("stab", key)
+```
