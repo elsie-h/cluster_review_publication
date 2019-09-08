@@ -71,7 +71,8 @@ extract %>%
   ungroup() %>%
   arrange(desc(n)) %>%
   transmute(`Data type` = Hmisc::capitalize(data_type),
-         `n (%)` = str_c(n, " (", round(100*n/nrow(extract),0), "%)")) 
+         `n (%)` = str_c(n, " (", round(100*n/nrow(extract),0), "%)")) %>%
+    kable(format = "markdown") 
 ```
 
 ## Initial considerations  
@@ -126,7 +127,9 @@ extract %>%
     panel.grid.major = element_line(colour = "grey70"),
     panel.ontop = FALSE
   ) 
-# + ggsave("n_patsvsn_feats.png", width = 7, height = 5)
+# + 
+#   ggsave("n_patsvsn_feats.png", width = 7, height = 5)
+
 ```
 
 ```{r sample_size}
@@ -149,7 +152,7 @@ key <- tribble(
   ~key, ~name,
   "log", "Logarithmic transformation",
   "box", "Box-Cox transformation",
-  "fev1", "FEV1 values adjusted (check paper)"
+  "unclear", "Unclear methods"
 )
 my_summary("ut", key)
 ```
@@ -319,7 +322,7 @@ key <- tribble(
 )
 my_summary("k", key)
 ```
-### Reproducibility
+### Quality
 ```{r repr}
 n_methods("rep")
 key <- tribble(
