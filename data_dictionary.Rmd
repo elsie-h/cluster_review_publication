@@ -6,7 +6,8 @@ output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.path = "data_dictionary_figs/")
 library(tidyverse)
 library(knitr)
 library(kableExtra)
@@ -149,7 +150,7 @@ data_dictionary <- tribble(
 
 ```{r create_table}
 data_dictionary %>%
-    kable(format = "html",
+    kable(format = "markdown",
         booktabs = TRUE, 
         align = "l", 
         linesep = '',
