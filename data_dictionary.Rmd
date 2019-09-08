@@ -1,0 +1,136 @@
+---
+title: "Data Dictionary"
+author: "Elsie Horne"
+date: "08/09/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+load("extract.RData")
+```
+
+```{r data_dictionary, include = FALSE}
+data_dictionary <- tribble(
+  ~`Item Information`, ~`Name`, ~`Description of sub-item`,
+  "general study information","author", "First author on study",
+  "general study information","year", "Year of publication",
+  "general study information","journal", "Publication jounral",
+  "general study information","id", "Unique study ID",
+  "general study information","pubmed", "Was the study identified in the PubMed search?",
+  "general study information","scopus", "Was the study identified in the Scopus search?",
+  "general study information","date_extract", "Date of extraction",
+  "general study information","population", "Study population used in the cluster analysis",
+  "general study information","country", "Country of origin of study population",
+  #####
+  "Details regarding exclusion criteria: yes/no/NA","exc_smoke", "Were smokers were excluded?",
+  "Details regarding exclusion criteria: yes/no/NA","exc_copd", "Were patients with Chronic Obstructive Pulmonary Disease (COPD) were excluded?",
+  #####
+  "Methods for chosing candidate cluster features: yes/NA","clinical_easy", "Were candidate cluster features chosen on the basis of being easy to measure in clinical practice?",
+  "Methods for chosing candidate cluster features: yes/NA","clinical_previous", "Were candidate cluster features chosen on the basis of previous studies?",
+  "Methods for chosing candidate cluster features: yes/NA","clinical_redundance", "Were cabndidate cluster features chosen on the basis of avoiding clinical redundancy?",
+  "Methods for chosing candidate cluster features: yes/NA","clinical_relevence", "Were candidate cluster features chosen on the basis of their relevance to asthma subtypes?",
+  #####
+   "Method for dealing with missing data: yes/NA","miss_cc", "Complete case analysis",
+ "Method for dealing with missing data: yes/NA","miss_handle", "Cluster analysis methods could handle missing data",
+ "Method for dealing with missing data: yes/NA","miss_impute", "Imputation",
+ "Method for dealing with missing data: yes/NA","miss_none", "No missing data present",
+ "Method for dealing with missing data: yes/NA","miss_pat", "Patients with >x% missing data removed",
+ "Method for dealing with missing data: yes/NA","miss_var", "Features with >x% missing values removed",
+ #####
+  "Number of patients included in cluster analysis", "n_pat", "",
+  #####
+ "Univariate variable transformations: yes/NA","ut_box", "Box-cox power transformation",
+ "Univariate variable transformations: yes/NA","ut_log", "Log-transformation",
+ "Univariate variable transformations: yes/NA","ut_unclear", "Univariate feature transformation carried out but methods unclear",
+ #####
+ "Method of feature selection: yes/NA","vselect_coll", "Avoid collinearity",
+ "Method of feature selection: yes/NA","vselect_fa", "Factor analysis",
+ "Method of feature selection: yes/NA","vselect_mca", "Multiple correspondence analysis",
+ "Method of feature selection: yes/NA","vselect_multico", "Avoid multicollinearity",
+ "Method of feature selection: yes/NA","vselect_pca", "Principal component analysis",
+ "Method of feature selection: yes/NA","vselect_supervised", "On the basis of statistical tests",
+ #####
+   "Methods of feature transformation: yes/NA","ft_factor", "Factor analysis",
+  "Methods of feature transformation: yes/NA","ft_mca", "Multiple correspondence analysis",
+  "Methods of feature transformation: yes/NA","ft_pca", "Principal component analysis",
+ #####
+   "Cluster feature details", "data_type", "Type of cluster features: categorical/continuous/mixed/unclear",
+   "Cluster feature details", "n_cat_feat", "Number of categorical cluster features",
+ "Cluster feature details","n_cont_feat", "Number of continuous cluster features",
+ "Cluster feature details","n_feat", "Total number of cluster features",
+  "Cluster feature details", "encode_bin","Were all categorical variables encoded as binary variables: yes/NA",
+ #####
+  "Methods used to scale the features: yes/NA","scale_01", "Scaled to the range [0,1]",
+ "Methods used to scale the features: yes/NA","scale_aad", "Average absolute deviation",
+ "Methods used to scale the features: yes/NA","scale_centre", "Centre-scaled",
+ "Methods used to scale the features: yes/NA","scale_gower", "Gower standardisation",
+ "Methods used to scale the features: yes/NA","scale_unit", "Scaled to unit length",
+ "Methods used to scale the features: yes/NA","scale_unspec", "Standardised but method unspecified",
+ "Methods used to scale the features: yes/NA","scale_z", "z-scores",
+ "Methods used to scale the features: yes/NA","scale_z_one", "One feature scaled to z-scores",
+ #####
+  "Dissimilarity measure used: yes/NA","prox_euc_ass", "Euclidean assumed due to cluster analysis method",
+ "Dissimilarity measure used: yes/NA","prox_euc_ex", "Euclidean stated",
+ "Dissimilarity measure used: yes/NA","prox_gower", "Gower's coefficient",
+ "Dissimilarity measure used: yes/NA","prox_ll_ass", "Log-likelihood measure assumed due to cluster analysis method",
+ "Dissimilarity measure used: yes/NA","prox_ll_exp", "Log-likelihood measure stated",
+ "Dissimilarity measure used: yes/NA","prox_spearman", "Dissimilarity measure based on Sprearman's Rho",
+ "Dissimilarity measure used: yes/NA","prox_tree", "Tree-based method using the treeClust R package",
+ #####
+  "Methods of cluster analysis: yes/NA","cluster_fuzzypam", "Fuzzy Partition Around Medoids",
+  "Methods of cluster analysis: yes/NA","cluster_hier", "Hierarchical clustering with no details of linkage",
+  "Methods of cluster analysis: yes/NA","cluster_hier_ave", "Hierarchical clustering with average linkage",
+  "Methods of cluster analysis: yes/NA","cluster_kmean", "k-means",
+  "Methods of cluster analysis: yes/NA","cluster_kmean_ward", "k-means for pre-clusters, hierarchical with Ward's linkage for final clusters",
+  "Methods of cluster analysis: yes/NA","cluster_kmedoid", "k-medoids",
+  "Methods of cluster analysis: yes/NA","cluster_mmlmkkc", "Multiple kernel k-means",
+  "Methods of cluster analysis: yes/NA","cluster_pre_hier", "Pre-clustering followed by hierarchical clustering",
+  "Methods of cluster analysis: yes/NA","cluster_spec", "Spectral clustering",
+  "Methods of cluster analysis: yes/NA","cluster_spss", "SPSS TwoStep",
+  "Methods of cluster analysis: yes/NA","cluster_unclear", "Unclear clustering methods",
+  "Methods of cluster analysis: yes/NA","cluster_ward", "Hierarchical clustering with Ward's linkage",
+  #####
+ "Method for choosing the number of clusters: yes/NA","k_bic", "Bayesian Information Criterion (Implemented as part of SPSS Two Step)",
+ "Method for choosing the number of clusters: yes/NA","k_dend", "Dendrogram (explicitly stated or diagram included, stating hierarchical techniques not sufficient)",
+ "Method for choosing the number of clusters: yes/NA","k_interp", "Clinical interpretation of the cluster solution",
+ "Method for choosing the number of clusters: yes/NA","k_max", "Did the study specify the maximum number of clusters which they considered?",
+ "Method for choosing the number of clusters: yes/NA","details_k_max", "What was the maximum number of clusters considered?",
+ "Method for choosing the number of clusters: yes/NA","k_mpc", "Did the study state the minumum size of cluster which they accept?",
+ "Method for choosing the number of clusters: yes/NA","details_k_mpc", "What was the minimum size of cluster considered?",
+ "Method for choosing the number of clusters: yes/NA","k_previous", "Previous studies/results.",
+ "Method for choosing the number of clusters: yes/NA","k_scree", "Scree plot",
+ "Method for choosing the number of clusters: yes/NA","k_silhouette", "Silhouette plot",
+ "Method for choosing the number of clusters: yes/NA","k_stat", "Statistic(s)", 
+ "Method for choosing the number of clusters: yes/NA","details_k_stat", "Which statistic(s) were used?",
+ "Method for choosing the number of clusters: yes/NA","details_k_stat_n", "How many statistics were used?",
+ "Method for choosing the number of clusters: yes/NA","k_unclear", "Unclear methods for choosing the  number of clusters",
+ "Method for choosing the number of clusters: yes/NA","k_wards", "Hierarchical clustering with Ward's linkage",
+ #####
+ "Number of clusters chosen", "n_k", "",
+ #####
+  "Method for testing quality of clusters: yes/NA","rep_initial", "Repeat with different initial values",
+ "Method for testing quality of clusters: yes/NA","rep_method", "Repeat with different methods",
+ "Method for testing quality of clusters: yes/NA","rep_select", "Repeat in a selected subset",
+ "Method for testing quality of clusters: yes/NA","rep_sep", "Repeat in a separate cohort",
+ "Method for testing quality of clusters: yes/NA","rep_software", "Repeat with different software",
+ "Method for testing quality of clusters: yes/NA","rep_time", "Repeat at different time-point",
+ "Method for testing quality of clusters: yes/NA","rep_var", "Repeat with altered variables",
+ #####
+ "Method for testing the stability of the clusters: yes/NA","stab_boot", "Bootstrap methods",
+ "Method for testing the stability of the clusters: yes/NA","stab_loo", "Leave-one-out cross-validation",
+ "Method for testing the stability of the clusters: yes/NA","stab_random", "Repeat in random subset",
+ "Method for testing the stability of the clusters: yes/NA","stab_tt", "Split into train and test set",
+ "Method for testing the stability of the clusters: yes/NA","stab_unclear", "Methods unclear",
+  #####
+   "Reporting", "details_report_stab", "Were the results of testing the stability/quality of the solution reported: yes/no"
+)
+```
+
+```{r create_table}
+data_dictionary %>%
+  kable()
+```
