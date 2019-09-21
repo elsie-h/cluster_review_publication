@@ -4,5 +4,7 @@ This repository contains the supporting information for our publication. (provid
 
 ## Contents
 1. [Data dictionary](https://github.com/elsie-h/cluster_review_publication/blob/master/data_dictionary.md)
-2. Code for generating tables and figures in the full text
+2. Tables and figures in text
+  - [Code in .Rmd file](https://github.com/elsie-h/cluster_review_publication/blob/master/results.Rmd)
+  - [Output in .md file](https://github.com/elsie-h/cluster_review_publication/blob/master/results.md)
 3. Dashboard for exploring the extracted data
