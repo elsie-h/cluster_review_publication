@@ -144,7 +144,7 @@ data_dictionary <- tribble(
  "","stab_tt", "Split into train and test set: yes/NA",
  "","stab_unclear", "Methods unclear: yes/NA",
   #####
- "Reporting", "details_report_stab", "Were the results of testing the stability/quality of the solution reported: yes/no"
+ "Reporting", "details_report_stab", "Were the results of testing the stability/quality of the solution reported: yes/no/NA"
 )
 ```
 
