@@ -2,7 +2,7 @@
 title: "Data Dictionary"
 author: "Elsie Horne"
 date: "08/09/2019"
-output: rmarkdown::github_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
