@@ -3,6 +3,7 @@ title: "Tables and figures for manuscript"
 author: "Elsie Horne"
 date: "31/07/2019"
 output: rmarkdown::github_document
+pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
