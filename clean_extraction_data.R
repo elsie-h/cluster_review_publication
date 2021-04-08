@@ -350,6 +350,7 @@ extract <- extract %>%
   select(-report_plot, -report_stab) # probably won't use these, clean later if I do.
 
 save(extract, file = "extract.RData")
+write_csv(extract, path = "extract.csv")
 
 # claenup
 rm(extract, names, my_groups)
