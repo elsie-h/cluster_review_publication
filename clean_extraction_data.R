@@ -347,7 +347,7 @@ extract <- extract %>%
   mutate(details_report_stab = if_else(report_stab %in% c("yes", "in supplementary materials"),
                                "yes",
                                NA_character_)) %>%
-  select(-report_plot, -class, -report_stab) # probably won't use these, clean later if I do.
+  select(-report_plot, -report_stab) # probably won't use these, clean later if I do.
 
 save(extract, file = "extract.RData")
 
