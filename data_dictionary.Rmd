@@ -21,7 +21,7 @@ Some items take values yes/no, e.g. 'Was the study identified in the PubMed sear
 * yes = it was identified
 * no = it was not identified
 
-Some items take values yes/no/NA, e.g. 'Were smokers exluded?'
+Some items take values yes/no/NA, e.g. 'Were smokers excluded?'
 
 * yes = the article states that smokers were excluded
 * no = the article states that smokers were not excluded
@@ -144,7 +144,9 @@ data_dictionary <- tribble(
  "","stab_tt", "Split into train and test set: yes/NA",
  "","stab_unclear", "Methods unclear: yes/NA",
   #####
- "Reporting", "details_report_stab", "Were the results of testing the stability/quality of the solution reported: yes/no/NA"
+ "Reporting", "details_report_stab", "Were the results of testing the stability/quality of the solution reported: yes/no/NA",
+ #####
+ "Classification method using clusters as outcome", "class", "decision tree/stepwise discriminant analysis/linear discriminant analysis/multiclass  svm/discriminant analysis/boruta feature selection algorithm/classifier not specified/logistic regression/stepwise descriminant analysis and decision tree"
 )
 ```
 
