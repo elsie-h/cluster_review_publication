@@ -108,7 +108,7 @@ my_summary("miss", key)
 ### Sample size
 ```{r sample_size_plot}
 abline <- data.frame(x = c(0, 1), y = c(0,70))
-extract %>%
+sample_size_plot <- extract %>%
   mutate(cluster_kmean = as.factor(if_else(cluster_kmean %in% c("yes", "final"),
                                  "k-means",
                                  "other"))) %>%
@@ -127,8 +127,19 @@ extract %>%
     panel.background = element_rect(fill = NA),
     panel.grid.major = element_line(colour = "grey70"),
     panel.ontop = FALSE
-  )  +
-   ggsave("/Users/elsiehorne/OneDrive - University of Edinburgh/cluster review/submission_files/figure_3.png", width = 7, height = 5)
+  )  
+
+ggsave(filename = "/Users/elsiehorne/OneDrive - University of Edinburgh/cluster review/submission_files/figure_3.png",
+       plot = sample_size_plot,
+       width = 7, 
+       height = 5)
+
+ggsave(filename = "/Users/elsiehorne/Docs/thesis_repo/thesis_tex/images/literature_review_results_initial_size.png",
+       # device = 'png',
+       dpi = 320,
+       plot = sample_size_plot,
+       width = 7, 
+       height = 5)
 
 ```
 
